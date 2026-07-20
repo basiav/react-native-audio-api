@@ -7,7 +7,12 @@
 
 #include <jni.h>
 
+#include <unistd.h>
+
 #include <algorithm>
+#include <atomic>
+#include <cinttypes>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 
@@ -108,6 +113,13 @@ bool AudioPlayer::isRunning() const {
 
 DataCallbackResult
 AudioPlayer::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
+  // TEMP RNAA-501: log player callback thread id on every callback.
+  __android_log_print(
+      ANDROID_LOG_INFO,
+      "RNAA-501",
+      "[AudioPlayer.cpp] Android player audio callback thread id=%" PRId64,
+      static_cast<int64_t>(gettid()));
+
   if (!isInitialized_.load(std::memory_order_acquire)) {
     return DataCallbackResult::Continue;
   }

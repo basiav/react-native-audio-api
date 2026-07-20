@@ -17,6 +17,10 @@
 #include <audioapi/utils/CircularArray.hpp>
 #include <audioapi/utils/CircularOverflowableAudioArray.h>
 
+#include <unistd.h>
+#include <atomic>
+#include <cinttypes>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -469,6 +473,16 @@ oboe::DataCallbackResult AndroidAudioRecorder::onAudioReady(
     oboe::AudioStream *oboeStream,
     void *audioData,
     int32_t numFrames) {
+  // TEMP RNAA-501: compare player vs recorder callback thread ids (log once).
+  static std::atomic<bool> loggedThreadId{false};
+  if (!loggedThreadId.exchange(true, std::memory_order_acq_rel)) {
+    __android_log_print(
+        ANDROID_LOG_INFO,
+        "RNAA-501",
+        "[AndroidAudioRecorder.cpp] Android recorder audio callback thread id=%" PRId64,
+        static_cast<int64_t>(gettid()));
+  }
+
   if (isPaused()) {
     return oboe::DataCallbackResult::Continue;
   }

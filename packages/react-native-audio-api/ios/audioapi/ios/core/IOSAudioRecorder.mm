@@ -3,6 +3,8 @@
 #import <AudioSessionManager.h>
 #import <Foundation/Foundation.h>
 
+#include <pthread.h>
+#include <atomic>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
@@ -108,6 +110,17 @@ IOSAudioRecorder::IOSAudioRecorder(
     : AudioRecorder(audioEventHandlerRegistry)
 {
   AudioReceiverBlock receiverBlock = ^(const AudioBufferList *inputBuffer, int numFrames) {
+    // TEMP RNAA-501: compare player vs recorder callback thread ids (log once).
+    static std::atomic<bool> loggedThreadId{false};
+    if (!loggedThreadId.exchange(true, std::memory_order_acq_rel)) {
+      uint64_t tid = 0;
+      pthread_threadid_np(nullptr, &tid);
+      NSLog(
+          @"[RNAA-501] [IOSAudioRecorder] recorder audio callback thread id=%llu pthread=%p",
+          tid,
+          (void *)pthread_self());
+    }
+
     if (usesFileOutput()) {
       if (auto lock = Locker::tryLock(fileWriterMutex_)) {
         fileWriter_->writeAudioData(inputBuffer, numFrames);

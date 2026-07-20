@@ -10,6 +10,8 @@
 #include <audioapi/ios/system/AudioEngine.h>
 #include <audioapi/utils/AudioBuffer.hpp>
 
+#include <pthread.h>
+
 namespace audioapi {
 
 IOSAudioPlayer::IOSAudioPlayer(
@@ -48,6 +50,14 @@ void IOSAudioPlayer::clearPendingSaved()
 
 void IOSAudioPlayer::deliverOutputBuffers(AudioBufferList *outputData, int numFrames)
 {
+  // TEMP RNAA-501: log player callback thread id on every callback.
+  uint64_t tid = 0;
+  pthread_threadid_np(nullptr, &tid);
+  NSLog(
+      @"[RNAA-501] [IOSAudioPlayer] player audio callback thread id=%llu pthread=%p",
+      tid,
+      (void *)pthread_self());
+
   const CurrentRenderScope renderScope(currentRenders_);
 
   // If requested, clear any saved overflow before continuing normal rendering.
