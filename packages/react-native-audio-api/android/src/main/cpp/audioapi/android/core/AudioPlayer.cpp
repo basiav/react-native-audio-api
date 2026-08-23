@@ -77,7 +77,21 @@ bool AudioPlayer::resume() {
   }
 
   if (mStream_ != nullptr) {
-    auto result = mStream_->requestStart() == oboe::Result::OK;
+    mStream_->close();
+
+    // 1. Zapisujemy dokładny kod z Oboe (np. ErrorClosed, ErrorDisconnected, itp.)
+    oboe::Result oboeResult = mStream_->requestStart();
+
+    // 2. Wypisujemy go do konsoli w Android Studio (Logcat)
+    __android_log_print(
+        ANDROID_LOG_ERROR,
+        "AudioPlayer",
+        "Mój test! Wynik requestStart to: %s",
+        oboe::convertToText(oboeResult));
+
+    // 3. Dopiero teraz sprawdzamy, czy to OK, i zamieniamy na true/false
+    auto result = (oboeResult == oboe::Result::OK);
+
     isRunning_.store(result, std::memory_order_release);
     return result;
   }

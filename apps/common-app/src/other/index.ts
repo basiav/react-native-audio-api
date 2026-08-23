@@ -5,6 +5,7 @@ import { TestScreen } from '../../../../packages/test-app-screen';
 
 import AudioParamPipeline from './AudioParamPipeline';
 import AudioPipelineStress from './AudioPipelineStress';
+import ResumeStreamDeath from './ResumeStreamDeath';
 
 /** Screens shown under the 'Other' bottom tab (stress tests, internal tooling). */
 export const otherScreens: Example[] = [
@@ -25,5 +26,11 @@ export const otherScreens: Example[] = [
     title: 'Test Screen',
     Icon: icons.TestTube,
     screen: TestScreen,
+  },
+  {
+    key: 'ResumeStreamDeath',
+    title: 'Resume Stream Death',
+    Icon: icons.VolumeX,
+    screen: ResumeStreamDeath,
   },
 ];
